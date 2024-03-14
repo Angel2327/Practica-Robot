@@ -4,7 +4,7 @@ import java.awt.Color;
 public class MiPrimerRobot implements Directions {
     public static void main(String[] args) {
         // Usamos el archivo que creamos del mundo
-        World.readWorld("Mundo.kwld");
+        World.readWorld("Mundo-Final.kwld");
         World.setVisible(true);
 
         Color blue = new Color(0, 0, 255);
