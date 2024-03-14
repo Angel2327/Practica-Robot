@@ -7,13 +7,22 @@ public class MiPrimerRobot implements Directions {
         World.readWorld("Mundo-Final.kwld");
         World.setVisible(true);
 
-        Color blue = new Color(0, 0, 255);
+        Color blue = new Color(0, 255, 225);
         Color red = new Color(255, 0, 0);
-        Racer Karel = new Racer(1, 1, East, 0, red);
-        Racer David = new Racer(1, 1, East, 0, blue);
+        Color black = new Color(0, 0, 0);
+        Racer Minero1 = new Racer(8, 1, South, 0, black);
+        Racer Minero2 = new Racer(9, 1, South, 0, black);
+        Racer Tren1 = new Racer(10, 1, South, 0, blue);
+        Racer Tren2 = new Racer(11, 1, South, 0, blue);
+        Racer Tren3 = new Racer(12, 1, South, 0, blue);
+        Racer Extractor = new Racer(13, 1, South, 0, red);
 
-        Karel.run();
-        David.run();
+        Minero1.run();
+        Minero2.run();
+        Tren1.run();
+        Tren2.run();
+        Tren3.run();
+        Extractor.run();
     }
 }
 
@@ -24,24 +33,7 @@ class Racer extends Robot {
     }
 
     public void race() {
-        // Mover el robot 4 pasos.
-        move(4);
-
-        // Recoger los 5 beepers
-        pickBeeper(5);
-
-        // Girar a la izquierda y salir de los muros
-        boolean front = frontIsClear();
-        if (front = true) {
-            turnLeft();
-        }
-        move(2);
-
-        // Poner los beepers fuera de los muros
-        putBeeper(5);
-
-        // Ponerse en otra posición y apagar el robot
-        move();
+        // Apagarse
         turnOff();
     }
 
