@@ -72,10 +72,12 @@ public class MiPrimerRobot implements Directions {
     }
 
     private static void mineros(int cantidadMineros) {
-
+        int puntoExtraccion = 11;
+        int avenidaSuperficie = 2;
         // Crear y ejecutar el comportamiento de los mineros
         for (int i = 0; i < cantidadMineros; i++) {
-
+            Minero minero = new Minero(puntoExtraccion, avenidaSuperficie, Color.BLACK);
+            minero.ingresarAlaMina();
         }
     }
 
@@ -142,5 +144,42 @@ class Racer extends Robot {
 
     public void run() {
         race();
+    }
+}
+
+class Minero extends Robot {
+    private static final int capacidad_max = 50;
+
+    public Minero(int street, int avenue, Color color) {
+        super(street, avenue, North, 0, color);
+        World.setupThread(this);
+    }
+
+    public void moverNposiciones(int nPosiciones){
+        for(int i = 0; i < nPosiciones;i++){
+            move();
+        }
+    }
+
+    public void turnLeftNveces(int nVeces){
+        for(int i = 0; i < nVeces;i++){
+            turnLeft();
+        }
+    }
+
+    public void ingresarAlaMina() {
+        turnLeftNveces(2);
+        moverNposiciones(4);
+        turnLeftNveces(3);
+        move();
+        turnLeft();
+        moverNposiciones(6);
+        turnLeft();
+        moverNposiciones(7);
+        turnLeft();
+        moverNposiciones(10);
+        turnLeftNveces(3);
+        moverNposiciones(5);
+
     }
 }
