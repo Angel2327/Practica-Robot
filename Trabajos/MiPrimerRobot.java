@@ -3,11 +3,8 @@ import java.awt.Color;
 
 public class MiPrimerRobot implements Directions {
     public static void main(String[] args) {
-        // Usamos el archivo que creamos del mundo
         World.readWorld("Mundo-Final.kwld");
         World.setVisible(true);
-
-        // Definimos los colores
         Color blue = new Color(0, 255, 225);
         Color red = new Color(255, 0, 0);
         Color black = new Color(0, 0, 0);
