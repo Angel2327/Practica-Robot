@@ -41,31 +41,31 @@ public class MiPrimerRobot implements Directions {
         crearRobots(cantidadMineros, cantidadTrenes, cantidadExtractores, blue, red, black);
         mineros(cantidadMineros);
         trenes(cantidadTrenes);
-        extractores(cantidadExtractores);
+        extractor(cantidadExtractores);
     }
 
-    private static void crearRobots(int cantidadMineros, int cantidadTransportadores, int cantidadExploradores,
+    private static void crearRobots(int cantidadMineros, int cantidadTrenes, int cantidadExtractores,
                                     Color blue, Color red, Color black) {
         for (int i = 0; i < cantidadMineros; i++) {
-            new Racer(8 + i, 1, South, 0, black).run();
+            new Minero(8 + i, 1, South, black).run();
         }
 
-        for (int i = 0; i < cantidadTransportadores; i++) {
+        for (int i = 0; i < cantidadTrenes; i++) {
             new Racer(10 + i, 1, South, 0, blue).run();
         }
 
-        for (int i = 0; i < cantidadExploradores; i++) {
-            new Racer(13 + i, 1, South, 0, red).run();
+        for (int i = 0; i < cantidadExtractores; i++) {
+            new Extractor(13 + i, 1, South,red).run();
         }
     }
 
-    private static void extractores(int cantidadExtractores) {
+    private static void extractor(int cantidadExtractores) {
         int puntoExtraccion = 11;
         int avenidaSuperficie = 2;
 
         // Crear y ejecutar el comportamiento de los extractores
         for (int i = 0; i < cantidadExtractores; i++) {
-            Extractor extractor = new Extractor(puntoExtraccion, avenidaSuperficie, Color.RED);
+            Extractor extractor = new Extractor(puntoExtraccion, avenidaSuperficie, South, Color.RED);
             extractor.extraerBeepers();
             extractor.salirMina();
         }
@@ -76,7 +76,7 @@ public class MiPrimerRobot implements Directions {
         int avenidaSuperficie = 2;
         // Crear y ejecutar el comportamiento de los mineros
         for (int i = 0; i < cantidadMineros; i++) {
-            Minero minero = new Minero(puntoExtraccion, avenidaSuperficie, Color.BLACK);
+            Minero minero = new Minero(puntoExtraccion, avenidaSuperficie, South, Color.BLACK);
             minero.ingresarAlaMina();
         }
     }
@@ -93,8 +93,8 @@ public class MiPrimerRobot implements Directions {
 class Extractor extends Robot {
     private static final int capacidad_max = 50;
 
-    public Extractor(int street, int avenue, Color color) {
-        super(street, avenue, North, 0, color);
+    public Extractor(int Street, int Avenue, Direction direction, Color color) {
+        super(Street, Avenue, direction, 0, color);
         World.setupThread(this);
     }
 
@@ -129,6 +129,15 @@ class Extractor extends Robot {
         // Informar a otros robots que pueden salir de la bodega
         System.out.println("¡Los extractores pueden salir de la bodega!");
     }
+
+    public void race() {
+        // Apagarse
+        turnOff();
+    }
+
+    public void run() {
+        race();
+    }
 }
 
 class Racer extends Robot {
@@ -150,8 +159,8 @@ class Racer extends Robot {
 class Minero extends Robot {
     private static final int capacidad_max = 50;
 
-    public Minero(int street, int avenue, Color color) {
-        super(street, avenue, North, 0, color);
+    public Minero(int Street, int Avenue, Direction direction, Color color) {
+        super(Street, Avenue, North, 0, color);
         World.setupThread(this);
     }
 
