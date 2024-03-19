@@ -1,5 +1,6 @@
 import kareltherobot.*;
 import java.awt.Color;
+import java.util.HashSet;
 
 public class MiPrimerRobot implements Directions {
     public static void main(String[] args) {
@@ -47,7 +48,7 @@ public class MiPrimerRobot implements Directions {
     private static void crearRobots(int cantidadMineros, int cantidadTrenes, int cantidadExtractores,
                                     Color blue, Color red, Color black) {
         for (int i = 0; i < cantidadMineros; i++) {
-            new Minero(8 + i, 1, South, black).run();
+            new Minero(8 + i, 1, South, 0, black).run();
         }
 
         for (int i = 0; i < cantidadTrenes; i++) {
@@ -76,7 +77,7 @@ public class MiPrimerRobot implements Directions {
         int avenidaSuperficie = 2;
         // Crear y ejecutar el comportamiento de los mineros
         for (int i = 0; i < cantidadMineros; i++) {
-            Minero minero = new Minero(puntoExtraccion, avenidaSuperficie, South, Color.BLACK);
+            Minero minero = new Minero(puntoExtraccion, avenidaSuperficie, South, 0, Color.BLACK);
             minero.ingresarAlaMina();
         }
     }
@@ -158,16 +159,56 @@ class Racer extends Robot {
 
 class Minero extends Robot {
     private static final int capacidad_max = 50;
+    private static HashSet<String> posicionesOcupadas = new HashSet<>(); // Definir como estática
 
-    public Minero(int Street, int Avenue, Direction direction, Color color) {
-        super(Street, Avenue, North, 0, color);
+    private int street;
+    private int avenue;
+
+    public Minero(int street, int avenue, Direction direction, int beepers, Color color) {
+        super(street, avenue, North, 0, color);
+        this.street = street;
+        this.avenue = avenue;
         World.setupThread(this);
     }
 
-    public void moverNposiciones(int nPosiciones){
-        for(int i = 0; i < nPosiciones;i++){
-            move();
+    public void moverNposiciones(int nPosiciones) {
+        for (int i = 0; i < nPosiciones; i++) {
+            try {
+                String nuevaPosicion = getNextPosition();
+                System.out.println("------ nuevaPosicion " + nuevaPosicion + posicionesOcupadas);
+                String currentPosition = street + "," + avenue;
+                if (!posicionesOcupadas.contains(nuevaPosicion)) {
+                    System.out.println("------ Se puede mover a la posicion");
+                    move();
+                    String[] coordenadas = nuevaPosicion.split(",");
+                    avenue = Integer.parseInt(coordenadas[1]);
+                    street = Integer.parseInt(coordenadas[0]);
+                    posicionesOcupadas.remove(currentPosition);
+                    posicionesOcupadas.add(nuevaPosicion);
+                }else{
+                    break;
+                }
+            } catch (Exception e) {
+                // TODO: handle exception
+            }
         }
+    }
+
+    public String getNextPosition() {
+        int newPosiblePositionAvenue = avenue;
+        int newPosiblePositionStreet = street;
+        if (facingEast()) {
+            newPosiblePositionAvenue = newPosiblePositionAvenue + 1;
+        } else if (facingWest()) {
+            newPosiblePositionAvenue = newPosiblePositionAvenue - 1;
+        } else if (facingNorth()) {
+            newPosiblePositionStreet = newPosiblePositionStreet + 1;
+        } else if (facingSouth()) {
+            newPosiblePositionStreet = newPosiblePositionStreet - 1;
+        }
+        System.out.println("getNextPosition avenida " + newPosiblePositionAvenue + ", calle " + newPosiblePositionStreet);
+        String posicion = newPosiblePositionStreet + "," + newPosiblePositionAvenue;
+        return posicion;
     }
 
     public void turnLeftNveces(int nVeces){
@@ -176,11 +217,19 @@ class Minero extends Robot {
         }
     }
 
+    public int getStreet() {
+        return street;
+    }
+
+    public int getAvenue() {
+        return avenue;
+    }
+
     public void ingresarAlaMina() {
         turnLeftNveces(2);
         moverNposiciones(4);
         turnLeftNveces(3);
-        move();
+        moverNposiciones(1);
         turnLeft();
         moverNposiciones(6);
         turnLeft();
@@ -189,6 +238,10 @@ class Minero extends Robot {
         moverNposiciones(10);
         turnLeftNveces(3);
         moverNposiciones(5);
-
+        turnLeftNveces(3);
+        moverNposiciones(1);
+        turnLeft();
+        moverNposiciones(1);
+        turnLeft();
     }
 }
