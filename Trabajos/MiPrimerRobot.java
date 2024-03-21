@@ -78,8 +78,6 @@ public class MiPrimerRobot implements Directions {
         // Crear y ejecutar el comportamiento de los mineros
         for (int i = 0; i < cantidadMineros; i++) {
             Thread mineroThread = new Thread(new MineroRunnable());
-            // Minero minero = new Minero(calle, avenida, North, 0, Color.BLACK);
-            // minero.ingresarAlaMina();
             mineroThread.start();
             try {
                 Thread.sleep(6000); // 1000 milisegundos = 1 segundo
@@ -92,10 +90,15 @@ public class MiPrimerRobot implements Directions {
     private static void trenes(int cantidadTrenes) {
         int calle = 9;
         int avenida = 2;
-        // Crear y ejecutar el comportamiento de los mineros
+        // Crear y ejecutar el comportamiento de los trenes
         for (int i = 0; i < cantidadTrenes; i++) {
-            Tren tren = new Tren(calle, avenida, North, 0, Color.BLUE);
-            // tren.ingresarAlaMina();
+            Thread trenThread = new Thread(new TrenRunnable());
+            trenThread.start();
+            try {
+                Thread.sleep(6000); // 1000 milisegundos = 1 segundo
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -104,10 +107,13 @@ public class MiPrimerRobot implements Directions {
         int avenida = 2;
         // Crear y ejecutar el comportamiento de los extractores
         for (int i = 0; i < cantidadExtractores; i++) {
-            Extractor extractor = new Extractor(calle, avenida, North, 0, Color.RED);
-            extractor.ingresarAlaMina();
-            extractor.extraerBeepers();
-            extractor.salirMina();
+            Thread extractorThread = new Thread(new ExtractorRunnable());
+            extractorThread.start();
+            try {
+                Thread.sleep(6000); // 1000 milisegundos = 1 segundo
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
@@ -274,10 +280,10 @@ class Minero extends Robot {
                 moverNposiciones(1); // Mover al minero a la posición [10][14]
                 // MiPrimerRobot.semaforos[10][14].release(); // Liberar el semáforo en la
                 // posición [10][14]
-    
+
                 turnLeftNveces(3);
                 moverNposiciones(1);
-    
+
                 for (int i = 0; i < 5; i++) {
                     if (nextToABeeper()) {
                         pickNBeeper(50);
@@ -293,7 +299,6 @@ class Minero extends Robot {
             // Manejar la excepción, si es necesario
         }
     }
-    
 
     private void regresarAlpuntoDeEntrega() {
         System.out.println("------ **regresarAlpuntoDeEntrega" + MiPrimerRobot.semaforos[11][14]);
@@ -340,6 +345,14 @@ class Minero extends Robot {
             System.out.println("------ **la mina esta desocupada");
             return true;
         }
+    }
+}
+
+class TrenRunnable implements Runnable {
+    @Override
+    public void run() {
+        Tren tren = new Tren(9, 2, Directions.North, 0, Color.BLUE);
+        tren.ingresarAlaMina();
     }
 }
 
@@ -425,6 +438,16 @@ class Tren extends Robot {
         moverNposiciones(10);
         turnLeftNveces(3);
         moverNposiciones(4);
+    }
+}
+
+class ExtractorRunnable implements Runnable {
+    @Override
+    public void run() {
+        Extractor extractor = new Extractor(10, 2, Directions.North, 0, Color.RED);
+        extractor.ingresarAlaMina();
+        extractor.extraerBeepers();
+        extractor.salirMina();
     }
 }
 
@@ -535,21 +558,5 @@ class Extractor extends Robot {
     private void informarSalidaBodega() {
         // Informar a otros robots que pueden salir de la bodega
         System.out.println("¡Los extractores pueden salir de la bodega!");
-    }
-}
-
-class Racer extends Robot {
-    public Racer(int Street, int Avenue, Direction direction, int beepers, Color color) {
-        super(Street, Avenue, direction, beepers, color);
-        World.setupThread(this);
-    }
-
-    public void race() {
-        // Apagarse
-        turnOff();
-    }
-
-    public void run() {
-        race();
     }
 }
