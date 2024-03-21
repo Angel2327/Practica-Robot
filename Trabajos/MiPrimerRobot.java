@@ -136,7 +136,7 @@ class Minero extends Robot {
     private static HashSet<String> posicionesOcupadas = new HashSet<>(); // Definir como estática
     private static final Object lock = new Object();
     public static final AtomicBoolean lockAtomic = new AtomicBoolean(false); // Renombrada a lockAtomic
-
+    private static int orden = 1;
     private int street;
     private int avenue;
 
@@ -188,8 +188,6 @@ class Minero extends Robot {
         } else if (facingSouth()) {
             newPosiblePositionStreet = newPosiblePositionStreet - 1;
         }
-        System.out
-                .println("getNextPosition avenida " + newPosiblePositionAvenue + ", calle " + newPosiblePositionStreet);
         String posicion = newPosiblePositionStreet + "," + newPosiblePositionAvenue;
         return posicion;
     }
@@ -242,35 +240,44 @@ class Minero extends Robot {
                 moverNposiciones(1);
                 turnLeft();
             }
-            System.out.println("------ **finaliza este lado del while");
 
             extraerBeepers();
-
             putNBeeper(50);
             regresarAlpuntoDeEspera();
-
             extraerBeepers();
-
             putNBeeper(50);
             regresarAlpuntoDeEspera();
-
             extraerBeepers();
-
             putNBeeper(50);
             regresarAlpuntoDeEspera();
-
             extraerBeepers();
-
             putNBeeper(50);
             regresarAlpuntoDeEspera();
-
             extraerBeepers();
-
             putNBeeper(50);
             regresarAlpuntoDeEspera();
+            prepararMinerosParaSalir();
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void prepararMinerosParaSalir() {
+        if (orden == 1) {
+            try {
+                synchronized (lock) {
+                    while (lockAtomic.getAndSet(true)) {
+                        lock.wait(); // Esperar hasta que sea su turno
+                    }
+                    moverNposiciones(1);
+                    orden = orden + 1;
+                    lockAtomic.set(false);
+                    lock.notify();
+                }
+            } catch (Exception e) {
+                // Manejar la excepción, si es necesario
+            }
         }
     }
 
@@ -281,9 +288,6 @@ class Minero extends Robot {
                     lock.wait(); // Esperar hasta que sea su turno
                 }
                 moverNposiciones(1); // Mover al minero a la posición [10][14]
-                // MiPrimerRobot.semaforos[10][14].release(); // Liberar el semáforo en la
-                // posición [10][14]
-
                 turnLeftNveces(3);
                 moverNposiciones(1);
 
@@ -304,7 +308,6 @@ class Minero extends Robot {
     }
 
     private void regresarAlpuntoDeEntrega() {
-        System.out.println("------ **regresarAlpuntoDeEntrega" + MiPrimerRobot.semaforos[11][14]);
         turnLeftNveces(2);
         while (avenue != 13) {
             MiPrimerRobot.semaforos[11][14].release();
