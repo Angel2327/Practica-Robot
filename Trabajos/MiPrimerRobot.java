@@ -6,12 +6,14 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+
 public class MiPrimerRobot implements Directions {
     private static final int NUMERO_DE_CALLES = 20;
     private static final int NUMERO_DE_AVENIDAS = 20;
 
     // Definición de la matriz de semáforos para todas las posiciones del mapa
     public static Semaphore[][] semaforos = new Semaphore[NUMERO_DE_CALLES][NUMERO_DE_AVENIDAS];
+    public static Semaphore semaforoTrenesRecoger = new Semaphore(0);
     static {
         // Inicialización de la matriz de semáforos
         for (int calle = 0; calle < NUMERO_DE_CALLES; calle++) {
@@ -28,7 +30,7 @@ public class MiPrimerRobot implements Directions {
         // Definimos la cantidad predeterminada de robots si no se especifica por línea
         // de comandos
         int cantidadMineros = 2;
-        int cantidadTrenes = 2;
+        int cantidadTrenes = 3;
         int cantidadExtractores = 2;
 
         // Verificamos si se especificaron argumentos de línea de comandos
@@ -133,7 +135,7 @@ class MineroRunnable implements Runnable {
 
 class Minero extends Robot {
     private static final int capacidad_max = 50;
-    private static HashSet<String> posicionesOcupadas = new HashSet<>(); // Definir como estática
+    private static int beepersEnPosicion1113 = 0;
     private static final Object lock = new Object();
     public static final AtomicBoolean lockAtomic = new AtomicBoolean(false); // Renombrada a lockAtomic
     private static int orden = 1;
@@ -236,30 +238,43 @@ class Minero extends Robot {
                 putNBeeper(50);
                 turnLeft();
                 moverNposiciones(1);
+                notificarAlTren();
                 turnLeft();
                 moverNposiciones(1);
                 turnLeft();
             }
 
+            notificarAlTren();
             extraerBeepers();
             putNBeeper(50);
             regresarAlpuntoDeEspera();
+            notificarAlTren();
             extraerBeepers();
             putNBeeper(50);
             regresarAlpuntoDeEspera();
+            notificarAlTren();
             extraerBeepers();
             putNBeeper(50);
             regresarAlpuntoDeEspera();
+            notificarAlTren();
             extraerBeepers();
             putNBeeper(50);
             regresarAlpuntoDeEspera();
+            notificarAlTren();
             extraerBeepers();
             putNBeeper(50);
             regresarAlpuntoDeEspera();
+            notificarAlTren();
             prepararMinerosParaSalir();
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void notificarAlTren(){
+        if(beepersEnPosicion1113 >= 120){
+            MiPrimerRobot.semaforoTrenesRecoger.release();
         }
     }
 
@@ -337,28 +352,28 @@ class Minero extends Robot {
         for (int i = 0; i < nVeces; i++) {
             putBeeper();
         }
+        beepersEnPosicion1113 = beepersEnPosicion1113 + nVeces;
     }
 
-    private boolean estaLaminaDesocupada() {
-        if (MiPrimerRobot.semaforos[11][15].availablePermits() == 0
-                || MiPrimerRobot.semaforos[11][16].availablePermits() == 0
-                || MiPrimerRobot.semaforos[11][17].availablePermits() == 0
-                || MiPrimerRobot.semaforos[11][18].availablePermits() == 0
-                || MiPrimerRobot.semaforos[11][19].availablePermits() == 0) {
-            System.out.println("------ **la mina esta ocupada");
-            return false;
-        } else {
-            System.out.println("------ **la mina esta desocupada");
-            return true;
-        }
+    public static int getBeepersEnPosicion1113() {
+        return beepersEnPosicion1113;
+    }
+
+    public static void setLessBeepersEnPosicion1113(int beepers) {
+        beepersEnPosicion1113 = beepersEnPosicion1113 - beepers;
     }
 }
+
 
 class TrenRunnable implements Runnable {
     @Override
     public void run() {
         Tren tren = new Tren(9, 2, Directions.North, 0, Color.BLUE);
         tren.ingresarAlaMina();
+        tren.iniciaProcesoDeTransporte();
+        tren.regresarAlpuntoDeEspera();
+        tren.iniciaProcesoDeTransporte();
+        tren.regresarAlpuntoDeEspera();
         System.out.println("------Tren ingresa a la mina");
         // tren.iniciaProcesoDeTransporte();
         // System.out.println("------Tren inicia el transporte");
@@ -460,31 +475,40 @@ class Tren extends Robot {
     }
 
     public void iniciaProcesoDeTransporte() {
+        try {
+            MiPrimerRobot.semaforoTrenesRecoger.acquire();
+            moverNposiciones(1);
+            pickNBeeper(120);
+            Minero.setLessBeepersEnPosicion1113(120);
+            regresarAlpuntoDeEntregaYDescargar();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
     private void extraerBeepers() {
     }
 
     public void regresarAlpuntoDeEspera() {
-        if (facingWest()) {
-            turnLeftNveces(2);
-        }
-        moverNposiciones(6);
+        moverNposiciones(4);
         turnLeftNveces(1);
         moverNposiciones(10);
         turnLeftNveces(3);
         moverNposiciones(4);
     }
 
-    public void regresarAlpuntoDeEntrega() {
+    public void regresarAlpuntoDeEntregaYDescargar() {
         turnLeftNveces(3);
         moverNposiciones(5);
         turnLeftNveces(3);
         moverNposiciones(10);
-        turnLeftNveces(3);
+        turnLeftNveces(1);
         moverNposiciones(5);
         turnLeftNveces(3);
         moverNposiciones(1);
+        putNBeeper(120);
+        turnLeftNveces(2);
+        moverNposiciones(2);
     }
 
     private void pickNBeeper(int nVeces) {
