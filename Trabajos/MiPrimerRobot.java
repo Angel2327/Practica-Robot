@@ -365,8 +365,10 @@ class TrenRunnable implements Runnable {
 }
 
 class Tren extends Robot {
-    private static final int capacidad_max = 120;
+    private static final int capacidad_max = 50;
     private static HashSet<String> posicionesOcupadas = new HashSet<>(); // Definir como estática
+    private static final Object lock = new Object();
+    public static final AtomicBoolean lockAtomic = new AtomicBoolean(false); // Renombrada a lockAtomic
 
     private int street;
     private int avenue;
@@ -382,21 +384,27 @@ class Tren extends Robot {
         for (int i = 0; i < nPosiciones; i++) {
             try {
                 String nuevaPosicion = getNextPosition();
-                System.out.println("------ nuevaPosicion " + nuevaPosicion + posicionesOcupadas);
-                String currentPosition = street + "," + avenue;
-                if (!posicionesOcupadas.contains(nuevaPosicion)) {
-                    // System.out.println("------ Se puede mover a la posicion");
-                    move();
-                    String[] coordenadas = nuevaPosicion.split(",");
-                    avenue = Integer.parseInt(coordenadas[1]);
-                    street = Integer.parseInt(coordenadas[0]);
-                    posicionesOcupadas.remove(currentPosition);
-                    posicionesOcupadas.add(nuevaPosicion);
-                } else {
-                    break;
-                }
+                System.out.println("------ nuevaPosicion " + nuevaPosicion);
+                String[] coordenadas = nuevaPosicion.split(",");
+                int avenueNew = Integer.parseInt(coordenadas[1]);
+                int streetNew = Integer.parseInt(coordenadas[0]);
+
+                // Adquirir el semáforo de la nueva posición
+                MiPrimerRobot.semaforos[streetNew][avenueNew].acquire();
+
+                // Mover el robot a la nueva posición
+                move();
+
+                // Liberar el semáforo de la posición anterior
+                MiPrimerRobot.semaforos[street][avenue].release();
+
+                // Actualizar la posición del robot
+                avenue = avenueNew;
+                street = streetNew;
             } catch (Exception e) {
-                // TODO: handle exception
+                // Manejar la excepción, si es necesario
+                System.out.println("------ **ENTRA AL CATCH" + MiPrimerRobot.semaforos[11][15]);
+                e.printStackTrace();
             }
         }
     }
@@ -446,6 +454,46 @@ class Tren extends Robot {
         moverNposiciones(10);
         turnLeftNveces(3);
         moverNposiciones(4);
+    }
+
+    public void iniciaProcesoDeTransporte() {
+    }
+
+    private void extraerBeepers() {
+    }
+
+    public void regresarAlpuntoDeEspera() {
+        if (facingWest()) {
+            turnLeftNveces(2);
+        }
+        moverNposiciones(6);
+        turnLeftNveces(1);
+        moverNposiciones(10);
+        turnLeftNveces(3);
+        moverNposiciones(4);
+    }
+
+    public void regresarAlpuntoDeEntrega() {
+        turnLeftNveces(3);
+        moverNposiciones(5);
+        turnLeftNveces(3);
+        moverNposiciones(10);
+        turnLeftNveces(3);
+        moverNposiciones(5);
+        turnLeftNveces(3);
+        moverNposiciones(1);
+    }
+
+    private void pickNBeeper(int nVeces) {
+        for (int i = 0; i < nVeces; i++) {
+            pickBeeper();
+        }
+    }
+
+    private void putNBeeper(int nVeces) {
+        for (int i = 0; i < nVeces; i++) {
+            putBeeper();
+        }
     }
 }
 
