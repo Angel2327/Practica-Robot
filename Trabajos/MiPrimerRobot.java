@@ -123,8 +123,11 @@ class MineroRunnable implements Runnable {
     public void run() {
         Minero minero = new Minero(8, 2, Directions.North, 0, Color.BLACK);
         minero.ingresarAlaMina();
+        System.out.println("------Minero ingresa a la mina");
         minero.iniciaProcesoDeMinado();
-        System.out.println("------Ingresa a la mina");
+        System.out.println("------Minero inicia la extraccion");
+        // minero.salirDeLaMina();
+        // System.out.println("------Minero sale de la mina");
     }
 }
 
@@ -353,6 +356,11 @@ class TrenRunnable implements Runnable {
     public void run() {
         Tren tren = new Tren(9, 2, Directions.North, 0, Color.BLUE);
         tren.ingresarAlaMina();
+        System.out.println("------Tren ingresa a la mina");
+        // tren.iniciaProcesoDeTransporte();
+        // System.out.println("------Tren inicia el transporte");
+        // tren.salirDeLaMina();
+        // System.out.println("------Tren sale de la mina");
     }
 }
 
@@ -446,8 +454,11 @@ class ExtractorRunnable implements Runnable {
     public void run() {
         Extractor extractor = new Extractor(10, 2, Directions.North, 0, Color.RED);
         extractor.ingresarAlaMina();
-        extractor.extraerBeepers();
-        extractor.salirMina();
+        System.out.println("------Extractor ingresa a la mina");
+        extractor.iniciaProcesoDeExtraccion();
+        // System.out.println("------Extractor inicia la extraccion");
+        extractor.salirDeLaMina();
+        System.out.println("------Extractor sale de la mina");
     }
 }
 
@@ -531,7 +542,7 @@ class Extractor extends Robot {
         moverNposiciones(1);
     }
 
-    public void extraerBeepers() {
+    public void iniciaProcesoDeExtraccion() {
         int cantidadExtraida = 0;
         while (nextToABeeper() && cantidadExtraida < capacidad_max) {
             pickBeeper();
@@ -540,7 +551,7 @@ class Extractor extends Robot {
         System.out.println("El extractor ha extraído " + cantidadExtraida + " beepers.");
     }
 
-    public void salirMina() {
+    public void salirDeLaMina() {
         turnLeftNveces(2);
         moverNposiciones(1);
         turnLeftNveces(3);
