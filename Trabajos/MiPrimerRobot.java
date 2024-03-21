@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 public class MiPrimerRobot implements Directions {
     private static final int NUMERO_DE_CALLES = 20;
     private static final int NUMERO_DE_AVENIDAS = 20;
@@ -14,6 +13,7 @@ public class MiPrimerRobot implements Directions {
     // Definición de la matriz de semáforos para todas las posiciones del mapa
     public static Semaphore[][] semaforos = new Semaphore[NUMERO_DE_CALLES][NUMERO_DE_AVENIDAS];
     public static Semaphore semaforoTrenesRecoger = new Semaphore(0);
+    public static Semaphore semaforoExtractoresRecoger = new Semaphore(0);
     static {
         // Inicialización de la matriz de semáforos
         for (int calle = 0; calle < NUMERO_DE_CALLES; calle++) {
@@ -135,7 +135,7 @@ class MineroRunnable implements Runnable {
 
 class Minero extends Robot {
     private static final int capacidad_max = 50;
-    private static int beepersEnPosicion1113 = 0;
+    private static int beepersEnPosicion = 0;
     private static final Object lock = new Object();
     public static final AtomicBoolean lockAtomic = new AtomicBoolean(false); // Renombrada a lockAtomic
     private static int orden = 1;
@@ -272,8 +272,8 @@ class Minero extends Robot {
         }
     }
 
-    private void notificarAlTren(){
-        if(beepersEnPosicion1113 >= 120){
+    private void notificarAlTren() {
+        if (beepersEnPosicion >= 120) {
             MiPrimerRobot.semaforoTrenesRecoger.release();
         }
     }
@@ -352,31 +352,26 @@ class Minero extends Robot {
         for (int i = 0; i < nVeces; i++) {
             putBeeper();
         }
-        beepersEnPosicion1113 = beepersEnPosicion1113 + nVeces;
+        beepersEnPosicion = beepersEnPosicion + nVeces;
     }
 
-    public static int getBeepersEnPosicion1113() {
-        return beepersEnPosicion1113;
+    public static int getBeepersEnPosicion() {
+        return beepersEnPosicion;
     }
 
-    public static void setLessBeepersEnPosicion1113(int beepers) {
-        beepersEnPosicion1113 = beepersEnPosicion1113 - beepers;
+    public static void setLessBeepersEnPosicion(int beepers) {
+        beepersEnPosicion = beepersEnPosicion - beepers;
     }
 }
-
 
 class TrenRunnable implements Runnable {
     @Override
     public void run() {
         Tren tren = new Tren(9, 2, Directions.North, 0, Color.BLUE);
         tren.ingresarAlaMina();
-        tren.iniciaProcesoDeTransporte();
-        tren.regresarAlpuntoDeEspera();
-        tren.iniciaProcesoDeTransporte();
-        tren.regresarAlpuntoDeEspera();
         System.out.println("------Tren ingresa a la mina");
-        // tren.iniciaProcesoDeTransporte();
-        // System.out.println("------Tren inicia el transporte");
+        tren.iniciaProcesoDeTransporte();
+        System.out.println("------Tren inicia el transporte");
         // tren.salirDeLaMina();
         // System.out.println("------Tren sale de la mina");
     }
@@ -385,6 +380,7 @@ class TrenRunnable implements Runnable {
 class Tren extends Robot {
     private static final int capacidad_max = 50;
     private static HashSet<String> posicionesOcupadas = new HashSet<>(); // Definir como estática
+    private static int beepersEnPosicion = 0;
     private static final Object lock = new Object();
     public static final AtomicBoolean lockAtomic = new AtomicBoolean(false); // Renombrada a lockAtomic
 
@@ -459,6 +455,12 @@ class Tren extends Robot {
         return avenue;
     }
 
+    private void notificarAlExtractor() {
+        if (beepersEnPosicion >= 50) {
+            MiPrimerRobot.semaforoExtractoresRecoger.release();
+        }
+    }
+
     public void ingresarAlaMina() {
         turnLeftNveces(2);
         moverNposiciones(2);
@@ -479,14 +481,12 @@ class Tren extends Robot {
             MiPrimerRobot.semaforoTrenesRecoger.acquire();
             moverNposiciones(1);
             pickNBeeper(120);
-            Minero.setLessBeepersEnPosicion1113(120);
+            Minero.setLessBeepersEnPosicion(120);
             regresarAlpuntoDeEntregaYDescargar();
+            regresarAlpuntoDeEspera();
         } catch (Exception e) {
             // TODO: handle exception
         }
-    }
-
-    private void extraerBeepers() {
     }
 
     public void regresarAlpuntoDeEspera() {
@@ -509,6 +509,7 @@ class Tren extends Robot {
         putNBeeper(120);
         turnLeftNveces(2);
         moverNposiciones(2);
+        notificarAlExtractor();
     }
 
     private void pickNBeeper(int nVeces) {
@@ -521,6 +522,15 @@ class Tren extends Robot {
         for (int i = 0; i < nVeces; i++) {
             putBeeper();
         }
+        beepersEnPosicion = beepersEnPosicion + nVeces;
+    }
+
+    public static int getBeepersEnPosicion() {
+        return beepersEnPosicion;
+    }
+
+    public static void setLessBeepersEnPosicion(int beepers) {
+        beepersEnPosicion = beepersEnPosicion - beepers;
     }
 }
 
@@ -528,12 +538,11 @@ class ExtractorRunnable implements Runnable {
     @Override
     public void run() {
         Extractor extractor = new Extractor(10, 2, Directions.North, 0, Color.RED);
-        extractor.ingresarAlaMina();
-        System.out.println("------Extractor ingresa a la mina");
         extractor.iniciaProcesoDeExtraccion();
+        System.out.println("------Extractor ingresa a la mina");
         // System.out.println("------Extractor inicia la extraccion");
-        extractor.salirDeLaMina();
-        System.out.println("------Extractor sale de la mina");
+        // extractor.salirDeLaMina();
+        // System.out.println("------Extractor sale de la mina");
     }
 }
 
@@ -606,39 +615,59 @@ class Extractor extends Robot {
         return avenue;
     }
 
-    public void ingresarAlaMina() {
-        turnLeftNveces(2);
-        moverNposiciones(3);
-        turnLeftNveces(3);
-        moverNposiciones(1);
-        turnLeft();
-        moverNposiciones(6);
-        turnLeft();
-        moverNposiciones(1);
+    private void pickNBeeper(int nVeces) {
+        for (int i = 0; i < nVeces; i++) {
+            pickBeeper();
+        }
+    }
+
+    private void putNBeeper(int nVeces) {
+        for (int i = 0; i < nVeces; i++) {
+            putBeeper();
+        }
     }
 
     public void iniciaProcesoDeExtraccion() {
-        int cantidadExtraida = 0;
-        while (nextToABeeper() && cantidadExtraida < capacidad_max) {
-            pickBeeper();
-            cantidadExtraida++;
+        try {
+            MiPrimerRobot.semaforoExtractoresRecoger.acquire();
+            turnLeftNveces(2);
+            moverNposiciones(3);
+            turnLeftNveces(3);
+            moverNposiciones(1);
+            turnLeftNveces(1);
+            moverNposiciones(6);
+            turnLeftNveces(1);
+            moverNposiciones(1);
+            pickNBeeper(50);
+            regresarAlaBodegaYDescargar();
+        } catch (Exception e) {
+            // TODO: handle exception
         }
-        System.out.println("El extractor ha extraído " + cantidadExtraida + " beepers.");
     }
 
-    public void salirDeLaMina() {
+    public void regresarAlaBodegaYDescargar() {
         turnLeftNveces(2);
         moverNposiciones(1);
         turnLeftNveces(3);
         moverNposiciones(6);
         turnLeftNveces(3);
         moverNposiciones(1);
-        turnLeft();
-        moverNposiciones(4);
+        turnLeftNveces(1);
+        moverNposiciones(1);
+        turnLeftNveces(3);
+        moverNposiciones(1);
+        turnLeftNveces(3);
+        moverNposiciones(1);
+        putNBeeper(50);
+        regresarAlpuntoDeEspera();
+    }
 
-        System.out.println("El extractor ha salido de la mina y se va a descansar.");
-        informarSalidaBodega();
-        turnOff();
+    public void regresarAlpuntoDeEspera() {
+        turnLeftNveces(2);
+        moverNposiciones(1);
+        turnLeftNveces(1);
+        moverNposiciones(2);
+        turnLeftNveces(2);
     }
 
     private void informarSalidaBodega() {
