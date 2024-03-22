@@ -29,7 +29,7 @@ public class MiPrimerRobot implements Directions {
     public static void main(String[] args) {
         World.readWorld("Mundo-100B.kwld");
         World.setVisible(true);
-        World.setDelay(15);
+        World.setDelay(5);
         // World.showSpeedControl(true);
         // Definimos la cantidad predeterminada de robots si no se especifica por línea
         // de comandos
@@ -84,7 +84,7 @@ public class MiPrimerRobot implements Directions {
             Thread mineroThread = new Thread(new MineroRunnable());
             mineroThread.start();
             try {
-                Thread.sleep(3000); // 1000 milisegundos = 1 segundo
+                Thread.sleep(1000); // 1000 milisegundos = 1 segundo
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -97,7 +97,7 @@ public class MiPrimerRobot implements Directions {
             Thread trenThread = new Thread(new TrenRunnable());
             trenThread.start();
             try {
-                Thread.sleep(3000); // 1000 milisegundos = 1 segundo
+                Thread.sleep(1000); // 1000 milisegundos = 1 segundo
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -110,7 +110,7 @@ public class MiPrimerRobot implements Directions {
             Thread extractorThread = new Thread(new ExtractorRunnable());
             extractorThread.start();
             try {
-                Thread.sleep(3000); // 1000 milisegundos = 1 segundo
+                Thread.sleep(1000); // 1000 milisegundos = 1 segundo
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -419,12 +419,9 @@ class TrenRunnable implements Runnable {
         while (!Minero.getLosMinerosHanFinalizado()) {
             tren.iniciaProcesoDeTransporte();
         }
-        tren.SalidaTrenes();
         System.out.println("------Trenes terminan");
-        // tren.iniciaProcesoDeTransporte();
-        // System.out.println("------Tren inicia el transporte");
-        // tren.salirDeLaMina();
-        // System.out.println("------Tren sale de la mina");
+        tren.salidaTrenes();
+        System.out.println("------Trenes salen de la mina");
     }
 }
 
@@ -567,7 +564,7 @@ class Tren extends Robot {
         moverNposiciones(2);
     }
 
-    public void SalidaTrenes() {
+    public void salidaTrenes() {
         try {
             MiPrimerRobot.semaforoAvisarSalida.acquire();
             turnLeftNveces(3);
@@ -626,12 +623,12 @@ class ExtractorRunnable implements Runnable {
         Extractor extractor = new Extractor(street, avenue, Directions.North, 0, Color.RED);
         extractor.posicionarseParaInicio();
         while (Extractor.getBeepersEnBodega() != MiPrimerRobot.cantidadDeMinasEnElMap) {
+            System.out.println("------Extractor inicia la extraccion");
             extractor.iniciaProcesoDeExtraccion();
         }
-        System.out.println("------Extractor inicia la extraccion");
-        // extractor.informarSalidaMina();
-        // extractor.salirDeLaMina();
-        // System.out.println("------Extractor sale de la mina");
+        System.out.println(Extractor.getBeepersEnBodega());
+        System.out.println("------Extractores terminan");
+        extractor.informarSalidaMina();
     }
 }
 
@@ -781,7 +778,6 @@ class Extractor extends Robot {
         moverNposiciones(1);
         putNBeeper(capacidad_max_extractor);
         regresarAlpuntoDeEspera();
-        informarSalidaMina();
     }
 
     public void regresarAlpuntoDeEspera() {
@@ -820,6 +816,7 @@ class Extractor extends Robot {
     public void informarSalidaMina() {
         if (beepersEnBodega == MiPrimerRobot.cantidadDeMinasEnElMap) {
             MiPrimerRobot.semaforoAvisarSalida.release();
+            turnOff();
         }
     }
 }
