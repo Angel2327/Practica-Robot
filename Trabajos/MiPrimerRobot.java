@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+
 public class MiPrimerRobot implements Directions {
     private static final int NUMERO_DE_CALLES = 20;
     private static final int NUMERO_DE_AVENIDAS = 20;
@@ -26,6 +27,7 @@ public class MiPrimerRobot implements Directions {
     public static void main(String[] args) {
         World.readWorld("Mundo-100B.kwld");
         World.setVisible(true);
+        World.setDelay(15);
         // imprimirEstadoSemaforos();
         // Definimos la cantidad predeterminada de robots si no se especifica por línea
         // de comandos
@@ -135,7 +137,8 @@ class MineroRunnable implements Runnable {
 
 class Minero extends Robot {
     private static final int capacidad_max = 50;
-    private static int beepersEnPosicion = 0;
+    private static int beepersEnPosicion1113 = 0;
+    private static boolean losMinerosHanFinalizado = false;
     private static final Object lock = new Object();
     public static final AtomicBoolean lockAtomic = new AtomicBoolean(false); // Renombrada a lockAtomic
     private static int orden = 1;
@@ -230,42 +233,17 @@ class Minero extends Robot {
 
     public void iniciaProcesoDeMinado() {
         try {
-            moverNposiciones(1);
-            while (nextToABeeper()) {
-                pickNBeeper(50);
-                turnLeft();
-                moverNposiciones(1);
+            int cantidadDeMinasEnElMap = 600;
+            int numeroDevecesARecoger = (cantidadDeMinasEnElMap / 50) / 2;
+
+            for (int i = 0; i < numeroDevecesARecoger; i++) {
+                extraerBeepers();
                 putNBeeper(50);
-                turnLeft();
-                moverNposiciones(1);
-                notificarAlTren();
-                turnLeft();
-                moverNposiciones(1);
-                turnLeft();
+                regresarAlpuntoDeEspera();
             }
 
-            notificarAlTren();
-            extraerBeepers();
-            putNBeeper(50);
-            regresarAlpuntoDeEspera();
-            notificarAlTren();
-            extraerBeepers();
-            putNBeeper(50);
-            regresarAlpuntoDeEspera();
-            notificarAlTren();
-            extraerBeepers();
-            putNBeeper(50);
-            regresarAlpuntoDeEspera();
-            notificarAlTren();
-            extraerBeepers();
-            putNBeeper(50);
-            regresarAlpuntoDeEspera();
-            notificarAlTren();
-            extraerBeepers();
-            putNBeeper(50);
-            regresarAlpuntoDeEspera();
-            notificarAlTren();
             prepararMinerosParaSalir();
+            losMinerosHanFinalizado = true;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -273,7 +251,8 @@ class Minero extends Robot {
     }
 
     private void notificarAlTren() {
-        if (beepersEnPosicion >= 120) {
+        System.out.println("notify " + beepersEnPosicion1113);
+        if (beepersEnPosicion1113 >= 120) {
             MiPrimerRobot.semaforoTrenesRecoger.release();
         }
     }
@@ -303,27 +282,85 @@ class Minero extends Robot {
                     lock.wait(); // Esperar hasta que sea su turno
                 }
                 moverNposiciones(1); // Mover al minero a la posición [10][14]
-                turnLeftNveces(3);
-                moverNposiciones(1);
 
-                for (int i = 0; i < 5; i++) {
-                    if (nextToABeeper()) {
+                for (int i = 0; i < 6; i++) {
+
+                    if (nextToABeeper() && avenue == 14) {
                         pickNBeeper(50);
                         regresarAlpuntoDeEntrega();
                         lockAtomic.set(false);
                         lock.notify();
                         return;
+                    } else {
+                        if (avenue == 14) {
+                            turnLeftNveces(3);
+                            moverNposiciones(1);
+                            if (nextToABeeper()) {
+                                pickNBeeper(50);
+                                regresarAlpuntoDeEntrega();
+                                lockAtomic.set(false);
+                                lock.notify();
+                                return;
+                            } else {
+                                moverNposiciones(1);
+                                if (nextToABeeper()) {
+                                    pickNBeeper(50);
+                                    regresarAlpuntoDeEntrega();
+                                    lockAtomic.set(false);
+                                    lock.notify();
+                                    return;
+                                } else {
+                                    moverNposiciones(1);
+                                    if (nextToABeeper()) {
+                                        pickNBeeper(50);
+                                        regresarAlpuntoDeEntrega();
+                                        lockAtomic.set(false);
+                                        lock.notify();
+                                        return;
+                                    } else {
+                                        moverNposiciones(1);
+                                        if (nextToABeeper()) {
+                                            pickNBeeper(50);
+                                            regresarAlpuntoDeEntrega();
+                                            lockAtomic.set(false);
+                                            lock.notify();
+                                            return;
+                                        } else {
+                                            moverNposiciones(1);
+                                            if (nextToABeeper()) {
+                                                pickNBeeper(50);
+                                                regresarAlpuntoDeEntrega();
+                                                lockAtomic.set(false);
+                                                lock.notify();
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
-                    moverNposiciones(1);
                 }
+                // moverNposiciones(1);
             }
-        } catch (Exception e) {
+
+        } catch (
+
+        Exception e) {
             // Manejar la excepción, si es necesario
         }
     }
 
     private void regresarAlpuntoDeEntrega() {
-        turnLeftNveces(2);
+
+        if (avenue != 14) {
+            System.out.println("regresar 1");
+            turnLeftNveces(2);
+        } else {
+            System.out.println("regresar  2");
+            turnLeftNveces(1);
+        }
+
         while (avenue != 13) {
             MiPrimerRobot.semaforos[11][14].release();
             // MiPrimerRobot.semaforos[11][15].release();
@@ -333,12 +370,15 @@ class Minero extends Robot {
     }
 
     private void regresarAlpuntoDeEspera() {
+        System.out.println("regresar al punto de espera");
         turnLeftNveces(1);
         moverNposiciones(1);
+        notificarAlTren();
         // street = street - 1;
         turnLeftNveces(1);
         moverNposiciones(1);
         // avenue = avenue + 1;
+
         turnLeftNveces(1);
     }
 
@@ -352,15 +392,20 @@ class Minero extends Robot {
         for (int i = 0; i < nVeces; i++) {
             putBeeper();
         }
-        beepersEnPosicion = beepersEnPosicion + nVeces;
+        beepersEnPosicion1113 = beepersEnPosicion1113 + nVeces;
+        System.out.println("beepersEnPosicion1113 ---" + beepersEnPosicion1113);
     }
 
-    public static int getBeepersEnPosicion() {
-        return beepersEnPosicion;
+    public static int getBeepersEnPosicion1113() {
+        return beepersEnPosicion1113;
     }
 
     public static void setLessBeepersEnPosicion(int beepers) {
-        beepersEnPosicion = beepersEnPosicion - beepers;
+        beepersEnPosicion1113 = beepersEnPosicion1113 - beepers;
+    }
+
+    public static boolean getLosMinerosHanFinalizado() {
+        return losMinerosHanFinalizado;
     }
 }
 
@@ -369,11 +414,17 @@ class TrenRunnable implements Runnable {
     public void run() {
         Tren tren = new Tren(9, 2, Directions.North, 0, Color.BLUE);
         tren.ingresarAlaMina();
-        System.out.println("------Tren ingresa a la mina");
-        tren.iniciaProcesoDeTransporte();
-        System.out.println("------Tren inicia el transporte");
+        while (!Minero.getLosMinerosHanFinalizado()) {
+            tren.iniciaProcesoDeTransporte();
+            tren.regresarAlpuntoDeEspera();
+        }
+
+        System.out.println("------Trenes terminan");
+        // tren.iniciaProcesoDeTransporte();
+        // System.out.println("------Tren inicia el transporte");
         // tren.salirDeLaMina();
         // System.out.println("------Tren sale de la mina");
+
     }
 }
 
@@ -478,12 +529,13 @@ class Tren extends Robot {
 
     public void iniciaProcesoDeTransporte() {
         try {
+            System.out.println("antes adq");
             MiPrimerRobot.semaforoTrenesRecoger.acquire();
+            System.out.println("siguiente adq");
             moverNposiciones(1);
             pickNBeeper(120);
             Minero.setLessBeepersEnPosicion(120);
             regresarAlpuntoDeEntregaYDescargar();
-            regresarAlpuntoDeEspera();
         } catch (Exception e) {
             // TODO: handle exception
         }
