@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MiPrimerRobot implements Directions {
     private static final int NUMERO_DE_CALLES = 20;
     private static final int NUMERO_DE_AVENIDAS = 20;
+    public static final int cantidadDeMinasEnElMap = 600;
 
     // Definición de la matriz de semáforos para todas las posiciones del mapa
     public static Semaphore[][] semaforos = new Semaphore[NUMERO_DE_CALLES][NUMERO_DE_AVENIDAS];
@@ -28,7 +29,7 @@ public class MiPrimerRobot implements Directions {
     public static void main(String[] args) {
         World.readWorld("Mundo-100B.kwld");
         World.setVisible(true);
-        World.setDelay(5);
+        World.showSpeedControl(true);
         // Definimos la cantidad predeterminada de robots si no se especifica por línea
         // de comandos
         int cantidadMineros = 2;
@@ -235,8 +236,7 @@ class Minero extends Robot {
 
     public void iniciaProcesoDeMinado() {
         try {
-            int cantidadDeMinasEnElMap = 600;
-            int numeroDevecesARecoger = (cantidadDeMinasEnElMap / 50) / 2;
+            int numeroDevecesARecoger = (MiPrimerRobot.cantidadDeMinasEnElMap / 50) / 2;
 
             for (int i = 0; i < numeroDevecesARecoger; i++) {
                 extraerBeepers();
@@ -604,6 +604,7 @@ class Extractor extends Robot {
     private static final int capacidad_max_extractor = 50;
     private static HashSet<String> posicionesOcupadas = new HashSet<>(); // Definir como estática
     private static int beepersEnBodega = 0;
+    private static boolean laExtraccionHaFinalizado = false;
 
     private int street;
     private int avenue;
@@ -743,6 +744,7 @@ class Extractor extends Robot {
         moverNposiciones(1);
         putNBeeper(capacidad_max_extractor);
         regresarAlpuntoDeEspera();
+        informarSalidaMina();
     }
 
     public void regresarAlpuntoDeEspera() {
@@ -770,7 +772,7 @@ class Extractor extends Robot {
     }
 
     public void informarSalidaMina() {
-        if (beepersEnBodega == 600) {
+        if (beepersEnBodega == MiPrimerRobot.cantidadDeMinasEnElMap) {
             MiPrimerRobot.semaforoAvisarSalida.release();
         }
     }
