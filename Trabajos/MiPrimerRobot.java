@@ -29,7 +29,7 @@ public class MiPrimerRobot implements Directions {
     public static void main(String[] args) {
         World.readWorld("Mundo-100B.kwld");
         World.setVisible(true);
-        World.setDelay(10);
+        World.setDelay(15);
         // World.showSpeedControl(true);
         // Definimos la cantidad predeterminada de robots si no se especifica por línea
         // de comandos
@@ -84,7 +84,7 @@ public class MiPrimerRobot implements Directions {
             Thread mineroThread = new Thread(new MineroRunnable());
             mineroThread.start();
             try {
-                Thread.sleep(1000); // 1000 milisegundos = 1 segundo
+                Thread.sleep(3000); // 1000 milisegundos = 1 segundo
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -419,7 +419,7 @@ class TrenRunnable implements Runnable {
         while (!Minero.getLosMinerosHanFinalizado()) {
             tren.iniciaProcesoDeTransporte();
         }
-
+        tren.SalidaTrenes();
         System.out.println("------Trenes terminan");
         // tren.iniciaProcesoDeTransporte();
         // System.out.println("------Tren inicia el transporte");
@@ -567,6 +567,35 @@ class Tren extends Robot {
         moverNposiciones(2);
     }
 
+    public void SalidaTrenes() {
+        try {
+            MiPrimerRobot.semaforoAvisarSalida.acquire();
+            turnLeftNveces(3);
+            moverNposiciones(5);
+            turnLeftNveces(3);
+            moverNposiciones(10);
+            turnLeftNveces(1);
+            moverNposiciones(5);
+            turnLeftNveces(3);
+            moverNposiciones(1);
+            turnLeftNveces(2);
+            moverNposiciones(1);
+            turnLeftNveces(3);
+            moverNposiciones(6);
+            turnLeftNveces(3);
+            moverNposiciones(1);
+            turnLeftNveces(1);
+            moverNposiciones(2);
+            turnLeftNveces(3);
+            moverNposiciones(1);
+            turnLeftNveces(1);
+            moverNposiciones(8);
+            turnOff();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+    }
+
     private void pickNBeeper(int nVeces) {
         for (int i = 0; i < nVeces; i++) {
             pickBeeper();
@@ -596,18 +625,9 @@ class ExtractorRunnable implements Runnable {
         int avenue = 1;
         Extractor extractor = new Extractor(street, avenue, Directions.North, 0, Color.RED);
         extractor.posicionarseParaInicio();
-        extractor.iniciaProcesoDeExtraccion();
-        extractor.iniciaProcesoDeExtraccion();
-        extractor.iniciaProcesoDeExtraccion();
-        extractor.iniciaProcesoDeExtraccion();
-        extractor.iniciaProcesoDeExtraccion();
-        extractor.iniciaProcesoDeExtraccion();
-        extractor.iniciaProcesoDeExtraccion();
-        extractor.iniciaProcesoDeExtraccion();
-        extractor.iniciaProcesoDeExtraccion();
-        extractor.iniciaProcesoDeExtraccion();
-        extractor.iniciaProcesoDeExtraccion();
-        extractor.iniciaProcesoDeExtraccion();
+        while (Extractor.getBeepersEnBodega() != MiPrimerRobot.cantidadDeMinasEnElMap) {
+            extractor.iniciaProcesoDeExtraccion();
+        }
         System.out.println("------Extractor inicia la extraccion");
         // extractor.informarSalidaMina();
         // extractor.salirDeLaMina();
@@ -734,25 +754,6 @@ class Extractor extends Robot {
             // TODO: handle exception
         }
     }
-    /*
-     * public void esperarAvisoParaExtraccion() {
-     * try {
-     * if (Tren.getBeepersParaExtraccion() > 0) {
-     * iniciaProcesoDeExtraccion();
-     * } else {
-     * posicionarseParaEntrar();
-     * MiPrimerRobot.semaforoExtractoresRecoger.acquire();
-     * iniciaProcesoDeExtraccion();
-     * }
-     * } catch (Exception e) {
-     * // TODO: handle exception
-     * }
-     * }
-     */
-
-    // public void esperarAvisoParaExtraccion(){
-    // posicionarseParaEntrar();
-    // }
 
     public void regresarAlaBodegaYDescargar() {
         turnLeftNveces(2);
@@ -764,7 +765,9 @@ class Extractor extends Robot {
         turnLeftNveces(1);
         moverNposiciones(1);
         turnLeftNveces(3);
-        MiPrimerRobot.semaforoExtractoresRecoger.release();
+        if (MiPrimerRobot.cantidadDeMinasEnElMap - beepersEnBodega != 50) {
+            MiPrimerRobot.semaforoExtractoresRecoger.release();
+        }
         if (beepersEnBodega < 150) {
             moverNposiciones(1);
         } else if (beepersEnBodega < 300) {
@@ -785,13 +788,13 @@ class Extractor extends Robot {
         turnLeftNveces(2);
         moverNposiciones(3);
         turnLeftNveces(1);
-        if (beepersEnBodega < 150) {
+        if (beepersEnBodega <= 150) {
             moverNposiciones(2);
-        } else if (beepersEnBodega < 300) {
+        } else if (beepersEnBodega <= 300) {
             moverNposiciones(3);
-        } else if (beepersEnBodega < 450) {
+        } else if (beepersEnBodega <= 450) {
             moverNposiciones(4);
-        } else if (beepersEnBodega < 600) {
+        } else if (beepersEnBodega <= 600) {
             moverNposiciones(5);
         }
         turnLeftNveces(3);
