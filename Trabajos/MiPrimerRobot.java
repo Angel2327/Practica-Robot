@@ -29,7 +29,7 @@ public class MiPrimerRobot implements Directions {
     public static void main(String[] args) {
         World.readWorld("Mundo-100B.kwld");
         World.setVisible(true);
-        World.setDelay(15);
+        World.setDelay(10);
         // World.showSpeedControl(true);
         // Definimos la cantidad predeterminada de robots si no se especifica por línea
         // de comandos
@@ -84,7 +84,7 @@ public class MiPrimerRobot implements Directions {
             Thread mineroThread = new Thread(new MineroRunnable());
             mineroThread.start();
             try {
-                Thread.sleep(3000); // 1000 milisegundos = 1 segundo
+                Thread.sleep(1000); // 1000 milisegundos = 1 segundo
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -556,15 +556,12 @@ class Tren extends Robot {
         turnLeftNveces(3);
         moverNposiciones(10);
         turnLeftNveces(1);
-        System.out.println("****release availablePermits " + MiPrimerRobot.semaforoExtractoresRecoger.availablePermits());
-        
+        if (Tren.getBeepersParaExtraccion() == 0) {
+            MiPrimerRobot.semaforoExtractoresRecoger.release();
+        }
         moverNposiciones(5);
         turnLeftNveces(3);
         moverNposiciones(1);
-        if(MiPrimerRobot.semaforoExtractoresRecoger.availablePermits() == 0){
-            MiPrimerRobot.semaforoExtractoresRecoger.release();
-        }
-        
         putNBeeper(capacidad_max_tren);
         turnLeftNveces(2);
         moverNposiciones(2);
@@ -600,14 +597,16 @@ class ExtractorRunnable implements Runnable {
         Extractor extractor = new Extractor(street, avenue, Directions.North, 0, Color.RED);
         extractor.posicionarseParaInicio();
         extractor.iniciaProcesoDeExtraccion();
-
-        
         extractor.iniciaProcesoDeExtraccion();
-
-        
         extractor.iniciaProcesoDeExtraccion();
-
-        
+        extractor.iniciaProcesoDeExtraccion();
+        extractor.iniciaProcesoDeExtraccion();
+        extractor.iniciaProcesoDeExtraccion();
+        extractor.iniciaProcesoDeExtraccion();
+        extractor.iniciaProcesoDeExtraccion();
+        extractor.iniciaProcesoDeExtraccion();
+        extractor.iniciaProcesoDeExtraccion();
+        extractor.iniciaProcesoDeExtraccion();
         extractor.iniciaProcesoDeExtraccion();
         System.out.println("------Extractor inicia la extraccion");
         // extractor.informarSalidaMina();
@@ -632,7 +631,7 @@ class Extractor extends Robot {
         World.setupThread(this);
     }
 
-   public void moverNposiciones(int nPosiciones) {
+    public void moverNposiciones(int nPosiciones) {
         for (int i = 0; i < nPosiciones; i++) {
             try {
                 String nuevaPosicion = getNextPosition();
@@ -642,7 +641,7 @@ class Extractor extends Robot {
                 int streetNew = Integer.parseInt(coordenadas[0]);
 
                 // Adquirir el semáforo de la nueva posición
-                
+
                 MiPrimerRobot.semaforos[streetNew][avenueNew].acquire();
                 System.out.println("nueva posicion extractor " + avenueNew + streetNew);
                 // Mover el robot a la nueva posición
@@ -765,7 +764,7 @@ class Extractor extends Robot {
         turnLeftNveces(1);
         moverNposiciones(1);
         turnLeftNveces(3);
-        
+        MiPrimerRobot.semaforoExtractoresRecoger.release();
         if (beepersEnBodega < 150) {
             moverNposiciones(1);
         } else if (beepersEnBodega < 300) {
@@ -778,9 +777,6 @@ class Extractor extends Robot {
         turnLeftNveces(3);
         moverNposiciones(1);
         putNBeeper(capacidad_max_extractor);
-        if(MiPrimerRobot.semaforoExtractoresRecoger.availablePermits() == 0){
-            MiPrimerRobot.semaforoExtractoresRecoger.release();
-        }
         regresarAlpuntoDeEspera();
         informarSalidaMina();
     }
@@ -805,17 +801,17 @@ class Extractor extends Robot {
     public void posicionarseParaEntrar() {
         System.out.println("posicionarseParaEntrar");
         turnLeftNveces(2);
-    
+
         moverNposiciones(1);
-        
+
     }
 
     public void posicionarseParaInicio() {
         System.out.println("posicionarseParaEntrar");
         turnLeftNveces(2);
-    
+
         moverNposiciones(8);
-        
+
     }
 
     public void informarSalidaMina() {
