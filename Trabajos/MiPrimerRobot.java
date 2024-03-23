@@ -88,7 +88,7 @@ public class MiPrimerRobot implements Directions {
             Thread mineroThread = new Thread(new MineroRunnable());
             mineroThread.start();
             try {
-                Thread.sleep(3000); // 1000 milisegundos = 1 segundo
+                Thread.sleep(2000); // 1000 milisegundos = 1 segundo
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -101,7 +101,7 @@ public class MiPrimerRobot implements Directions {
             Thread trenThread = new Thread(new TrenRunnable());
             trenThread.start();
             try {
-                Thread.sleep(3000); // 1000 milisegundos = 1 segundo
+                Thread.sleep(2000); // 1000 milisegundos = 1 segundo
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -114,7 +114,7 @@ public class MiPrimerRobot implements Directions {
             Thread extractorThread = new Thread(new ExtractorRunnable());
             extractorThread.start();
             try {
-                Thread.sleep(3000); // 1000 milisegundos = 1 segundo
+                Thread.sleep(2000); // 1000 milisegundos = 1 segundo
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
