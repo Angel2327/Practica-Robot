@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 public class MiPrimerRobot implements Directions {
     private static final int NUMERO_DE_CALLES = 20;
     private static final int NUMERO_DE_AVENIDAS = 20;
@@ -83,23 +82,13 @@ public class MiPrimerRobot implements Directions {
         extractor(cantidadExtractores);
     }
 
-    public static void imprimirEstadoSemaforos() {
-        // Imprimir el estado de los semáforos
-        for (int i = 0; i < 20; i++) {
-            for (int j = 0; j < 20; j++) {
-                Semaphore semaforo = semaforos[i][j];
-                int permisosDisponibles = semaforo.availablePermits();
-            }
-        }
-    }
-
     private static void mineros(int cantidadMineros) {
         // Crear y ejecutar el comportamiento de los mineros
         for (int i = 0; i < cantidadMineros; i++) {
             Thread mineroThread = new Thread(new MineroRunnable());
             mineroThread.start();
             try {
-                Thread.sleep(1000); // 1000 milisegundos = 1 segundo
+                Thread.sleep(3000); // 1000 milisegundos = 1 segundo
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -112,7 +101,7 @@ public class MiPrimerRobot implements Directions {
             Thread trenThread = new Thread(new TrenRunnable());
             trenThread.start();
             try {
-                Thread.sleep(1000); // 1000 milisegundos = 1 segundo
+                Thread.sleep(3000); // 1000 milisegundos = 1 segundo
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -125,7 +114,7 @@ public class MiPrimerRobot implements Directions {
             Thread extractorThread = new Thread(new ExtractorRunnable());
             extractorThread.start();
             try {
-                Thread.sleep(1000); // 1000 milisegundos = 1 segundo
+                Thread.sleep(3000); // 1000 milisegundos = 1 segundo
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -211,14 +200,6 @@ class Minero extends Robot {
         }
     }
 
-    public int getStreet() {
-        return street;
-    }
-
-    public int getAvenue() {
-        return avenue;
-    }
-
     public void ingresarAlaMina() {
         turnLeftNveces(2);
         while (frontIsClear()) {
@@ -257,7 +238,6 @@ class Minero extends Robot {
 
             prepararMinerosParaSalir();
             losMinerosHanFinalizado = true;
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -408,9 +388,7 @@ class Minero extends Robot {
 
         while (avenue != 13) {
             MiPrimerRobot.semaforos[11][14].release();
-            // MiPrimerRobot.semaforos[11][15].release();
             moverNposiciones(1);
-            // avenue = avenue - 1;
         }
     }
 
@@ -528,14 +506,6 @@ class Tren extends Robot {
         for (int i = 0; i < nVeces; i++) {
             turnLeft();
         }
-    }
-
-    public int getStreet() {
-        return street;
-    }
-
-    public int getAvenue() {
-        return avenue;
     }
 
     public void ingresarAlaMina() {
@@ -657,8 +627,7 @@ class ExtractorRunnable implements Runnable {
         int avenue = 1;
         Extractor extractor = new Extractor(street, avenue, Directions.North, 0, Color.RED);
         extractor.posicionarseParaInicio();
-        // while (Extractor.getBeepersEnBodega() !=
-        // MiPrimerRobot.cantidadDeMinasEnElMap) {
+
         while (MiPrimerRobot.cantidadDeMinasEnElMap - Extractor.getBeepersEnBodega() >= 50
                 * (MiPrimerRobot.cantidadExtractores - 1)) {
             extractor.iniciaProcesoDeExtraccion();
@@ -731,14 +700,6 @@ class Extractor extends Robot {
         for (int i = 0; i < nVeces; i++) {
             turnLeft();
         }
-    }
-
-    public int getStreet() {
-        return street;
-    }
-
-    public int getAvenue() {
-        return avenue;
     }
 
     private void pickNBeeper(int nVeces) {
@@ -837,15 +798,7 @@ class Extractor extends Robot {
                 moverNposiciones(MiPrimerRobot.cantidadExtractores - ordenExtractor);
                 turnOff();
             }
-            /*
-             * if (ordenExtractor == 0) {
-             * moverNposiciones(3);
-             * turnOff();
-             * ordenExtractor = ordenExtractor + 1;
-             * } else {
-             * turnOff();
-             * }
-             */
+
         } else {
             moverNposiciones(MiPrimerRobot.cantidadExtractores);
         }
