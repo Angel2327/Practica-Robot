@@ -88,7 +88,7 @@ public class MiPrimerRobot implements Directions {
             Thread mineroThread = new Thread(new MineroRunnable());
             mineroThread.start();
             try {
-                Thread.sleep(2000); // 1000 milisegundos = 1 segundo
+                Thread.sleep(1000); // 1000 milisegundos = 1 segundo
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -101,7 +101,7 @@ public class MiPrimerRobot implements Directions {
             Thread trenThread = new Thread(new TrenRunnable());
             trenThread.start();
             try {
-                Thread.sleep(2000); // 1000 milisegundos = 1 segundo
+                Thread.sleep(1000); // 1000 milisegundos = 1 segundo
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -114,7 +114,7 @@ public class MiPrimerRobot implements Directions {
             Thread extractorThread = new Thread(new ExtractorRunnable());
             extractorThread.start();
             try {
-                Thread.sleep(2000); // 1000 milisegundos = 1 segundo
+                Thread.sleep(1000); // 1000 milisegundos = 1 segundo
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -448,7 +448,6 @@ class Tren extends Robot {
     private static final Object lock = new Object();
     public static final AtomicBoolean lockAtomic = new AtomicBoolean(false); // Renombrada a lockAtomic
     private static int ordenTrenes = 0;
-
     private int street;
     private int avenue;
 
@@ -627,7 +626,6 @@ class ExtractorRunnable implements Runnable {
         int avenue = 1;
         Extractor extractor = new Extractor(street, avenue, Directions.North, 0, Color.RED);
         extractor.posicionarseParaInicio();
-
         while (MiPrimerRobot.cantidadDeMinasEnElMap - Extractor.getBeepersEnBodega() >= 50
                 * (MiPrimerRobot.cantidadExtractores - 1)) {
             extractor.iniciaProcesoDeExtraccion();
