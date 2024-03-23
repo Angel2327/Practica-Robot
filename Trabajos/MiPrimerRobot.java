@@ -10,6 +10,9 @@ public class MiPrimerRobot implements Directions {
     private static final int NUMERO_DE_CALLES = 20;
     private static final int NUMERO_DE_AVENIDAS = 20;
     public static final int cantidadDeMinasEnElMap = 600;
+    public static int cantidadMineros = 2;
+    public static int cantidadTrenes = 10;
+    public static int cantidadExtractores = 4;
 
     // Definición de la matriz de semáforos para todas las posiciones del mapa
     public static Semaphore[][] semaforos = new Semaphore[NUMERO_DE_CALLES][NUMERO_DE_AVENIDAS];
@@ -33,10 +36,6 @@ public class MiPrimerRobot implements Directions {
         // World.showSpeedControl(true);
         // Definimos la cantidad predeterminada de robots si no se especifica por línea
         // de comandos
-        int cantidadMineros = 2;
-        int cantidadTrenes = 3;
-        int cantidadExtractores = 2;
-
         // Verificamos si se especificaron argumentos de línea de comandos
         if (args.length >= 6 && args.length % 2 == 0) {
             for (int i = 0; i < args.length; i += 2) {
@@ -139,7 +138,7 @@ class Minero extends Robot {
     private static boolean losMinerosHanFinalizado = false;
     private static final Object lock = new Object();
     public static final AtomicBoolean lockAtomic = new AtomicBoolean(false); // Renombrada a lockAtomic
-    private static int orden = 1;
+    private static int ordenMinero = 1;
     private int street;
     private int avenue;
 
@@ -261,14 +260,14 @@ class Minero extends Robot {
     }
 
     public void prepararMinerosParaSalir() {
-        if (orden == 1) {
+        if (ordenMinero == 1) {
             try {
                 synchronized (lock) {
                     while (lockAtomic.getAndSet(true)) {
                         lock.wait(); // Esperar hasta que sea su turno
                     }
                     moverNposiciones(1);
-                    orden = orden + 1;
+                    ordenMinero = ordenMinero + 1;
                     lockAtomic.set(false);
                     lock.notify();
                 }
@@ -431,6 +430,7 @@ class Tren extends Robot {
     private static int beepersParaExtraccion = 0;
     private static final Object lock = new Object();
     public static final AtomicBoolean lockAtomic = new AtomicBoolean(false); // Renombrada a lockAtomic
+    private static int ordenTrenes = 0;
 
     private int street;
     private int avenue;
@@ -567,6 +567,7 @@ class Tren extends Robot {
     public void salidaTrenes() {
         try {
             MiPrimerRobot.semaforoAvisarSalida.acquire();
+            moverNposiciones(1);
             turnLeftNveces(3);
             moverNposiciones(5);
             turnLeftNveces(3);
@@ -574,9 +575,7 @@ class Tren extends Robot {
             turnLeftNveces(1);
             moverNposiciones(5);
             turnLeftNveces(3);
-            moverNposiciones(1);
-            turnLeftNveces(2);
-            moverNposiciones(1);
+            moverNposiciones(2);
             turnLeftNveces(3);
             moverNposiciones(6);
             turnLeftNveces(3);
@@ -586,8 +585,12 @@ class Tren extends Robot {
             turnLeftNveces(3);
             moverNposiciones(1);
             turnLeftNveces(1);
-            moverNposiciones(8);
-            turnOff();
+            System.out.println("saldiatrenes " + ordenTrenes + " " + MiPrimerRobot.cantidadTrenes);
+            if (ordenTrenes < MiPrimerRobot.cantidadTrenes) {
+                ordenTrenes = ordenTrenes + 1;
+                moverNposiciones(11-ordenTrenes);   
+                turnOff();
+            }
         } catch (Exception e) {
             // TODO: handle exception
         }
@@ -622,11 +625,13 @@ class ExtractorRunnable implements Runnable {
         int avenue = 1;
         Extractor extractor = new Extractor(street, avenue, Directions.North, 0, Color.RED);
         extractor.posicionarseParaInicio();
-        while (Extractor.getBeepersEnBodega() != MiPrimerRobot.cantidadDeMinasEnElMap) {
+        //while (Extractor.getBeepersEnBodega() != MiPrimerRobot.cantidadDeMinasEnElMap) {
+            System.out.println("***while ");
+            while (MiPrimerRobot.cantidadDeMinasEnElMap - Extractor.getBeepersEnBodega() >= 50 * (MiPrimerRobot.cantidadExtractores - 1)) {
             System.out.println("------Extractor inicia la extraccion");
             extractor.iniciaProcesoDeExtraccion();
+            System.out.println(Extractor.getBeepersEnBodega());
         }
-        System.out.println(Extractor.getBeepersEnBodega());
         System.out.println("------Extractores terminan");
         extractor.informarSalidaMina();
     }
@@ -637,7 +642,7 @@ class Extractor extends Robot {
     private static HashSet<String> posicionesOcupadas = new HashSet<>(); // Definir como estática
     private static int beepersEnBodega = 0;
     private static boolean laExtraccionHaFinalizado = false;
-
+    private static int ordenExtractor = 0;
     private int street;
     private int avenue;
 
@@ -782,7 +787,7 @@ class Extractor extends Robot {
 
     public void regresarAlpuntoDeEspera() {
         turnLeftNveces(2);
-        moverNposiciones(3);
+        moverNposiciones(MiPrimerRobot.cantidadExtractores + 2);
         turnLeftNveces(1);
         if (beepersEnBodega <= 150) {
             moverNposiciones(2);
@@ -800,9 +805,24 @@ class Extractor extends Robot {
     public void posicionarseParaEntrar() {
         System.out.println("posicionarseParaEntrar");
         turnLeftNveces(2);
-
-        moverNposiciones(1);
-
+        if ((MiPrimerRobot.cantidadDeMinasEnElMap - Extractor.getBeepersEnBodega() <= 50 * (MiPrimerRobot.cantidadExtractores-1))) {
+            System.out.println(
+                    "if resta " + MiPrimerRobot.cantidadDeMinasEnElMap + " " + beepersEnBodega + " " + ordenExtractor);
+                    if (ordenExtractor < MiPrimerRobot.cantidadExtractores) {
+                        ordenExtractor = ordenExtractor + 1;
+                        moverNposiciones(MiPrimerRobot.cantidadExtractores-ordenExtractor);   
+                        turnOff();
+                    }
+            /*if (ordenExtractor == 0) {
+                moverNposiciones(3);
+                turnOff();
+                ordenExtractor = ordenExtractor + 1;
+            } else {
+                turnOff();
+            }*/
+        } else {
+            moverNposiciones(MiPrimerRobot.cantidadExtractores);
+        }
     }
 
     public void posicionarseParaInicio() {
@@ -815,7 +835,9 @@ class Extractor extends Robot {
 
     public void informarSalidaMina() {
         if (beepersEnBodega == MiPrimerRobot.cantidadDeMinasEnElMap) {
-            MiPrimerRobot.semaforoAvisarSalida.release();
+            for (int i = 0; i < MiPrimerRobot.cantidadTrenes; i++) {
+                MiPrimerRobot.semaforoAvisarSalida.release();
+            }
             turnOff();
         }
     }
